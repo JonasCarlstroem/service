@@ -1,4 +1,5 @@
 #pragma once
+// std
 #include <Windows.h>
 #include <string>
 #include <thread>
@@ -8,17 +9,14 @@ namespace svc {
 
 class service_base {
   public:
-    static service_base *instance;
-    service_base(const string &name) : service_name(name) {}
-    service_base(const string &name, bool s_mode)
-        : service_name(name), service_mode(s_mode) {}
+    static service_base* instance;
+    service_base(const string& name) : service_name(name) {}
+    service_base(const string& name, bool s_mode) : service_name(name), service_mode(s_mode) {}
     virtual ~service_base() = default;
 
     void run() {
         SERVICE_TABLE_ENTRY service_table[] = {
-            {const_cast<LPSTR>(service_name.c_str()), ServiceMain},
-            {nullptr, nullptr}
-        };
+          {const_cast<LPSTR>(service_name.c_str()), ServiceMain}, {nullptr, nullptr}};
 
         instance = this;
 
@@ -29,9 +27,7 @@ class service_base {
 
     bool is_running() const { return running; }
 
-    void on_start(int argc, char *argv[]) {
-        on_start((DWORD)argc, (LPSTR *)argv);
-    }
+    void on_start(int argc, char* argv[]) { on_start((DWORD)argc, (LPSTR*)argv); }
 
     void on_control(int ctrl_code) { on_control((DWORD)ctrl_code); }
 
@@ -39,16 +35,16 @@ class service_base {
 
   protected:
     int argc    = 0;
-    char **argv = nullptr;
+    char** argv = nullptr;
     std::string service_name;
     SERVICE_STATUS_HANDLE status_handle = nullptr;
     SERVICE_STATUS service_status       = {};
     bool service_mode                   = true;
     bool running                        = false;
 
-    virtual void main_loop() = 0;
+    virtual void main_loop()            = 0;
 
-    static void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
+    static void WINAPI ServiceMain(DWORD argc, LPSTR* argv) {
         if (instance) {
             instance->on_start(argc, argv);
         }
@@ -60,18 +56,16 @@ class service_base {
         }
     }
 
-    void on_start(DWORD argc, LPSTR *argv) {
-        this->argc = argc;
-        this->argv = argv;
+    void on_start(DWORD argc, LPSTR* argv) {
+        this->argc                        = argc;
+        this->argv                        = argv;
 
         service_status.dwServiceType      = SERVICE_WIN32_OWN_PROCESS;
         service_status.dwControlsAccepted = SERVICE_ACCEPT_STOP;
         service_status.dwCurrentState     = SERVICE_START_PENDING;
 
         if (service_mode) {
-            status_handle = RegisterServiceCtrlHandlerA(
-                service_name.c_str(), ServiceCtrlHandler
-            );
+            status_handle = RegisterServiceCtrlHandlerA(service_name.c_str(), ServiceCtrlHandler);
             if (!status_handle)
                 return;
 
@@ -103,18 +97,16 @@ class service_base {
         }
     }
 
-    void log_event(WORD type, const string &message) {
+    void log_event(WORD type, const string& message) {
         HANDLE hEventLog = RegisterEventSource(nullptr, service_name.c_str());
         if (hEventLog) {
             LPCSTR strings[1] = {message.c_str()};
-            ReportEventA(
-                hEventLog, type, 0, 0, nullptr, 1, 0, strings, nullptr
-            );
+            ReportEventA(hEventLog, type, 0, 0, nullptr, 1, 0, strings, nullptr);
             DeregisterEventSource(hEventLog);
         }
     }
 };
 
-service_base *service_base::instance = nullptr;
+service_base* service_base::instance = nullptr;
 
 } // namespace svc
