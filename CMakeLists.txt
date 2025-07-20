@@ -5,4 +5,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(service INTERFACE)
 
+install(TARGETS service
+		EXPORT libTargets
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		RUNTIME DESTINATION bin
+		INCLUDES DESTINATION include)
+
+install(DIRECTORY include/ DESTINATION include)
+
 set(LIB_TARGETS service PARENT_SCOPE)
