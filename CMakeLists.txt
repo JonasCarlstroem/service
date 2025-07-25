@@ -3,15 +3,12 @@ cmake_minimum_required(VERSION 3.23)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(service INTERFACE)
+#add_library(service INTERFACE)
+CREATE_LIB(service INTERFACE)
 
-install(TARGETS service
-		EXPORT libTargets
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib
-		RUNTIME DESTINATION bin
-		INCLUDES DESTINATION include)
+target_include_directories(service INTERFACE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include/service>
+)
 
-install(DIRECTORY include/ DESTINATION include)
-
-set(LIB_TARGETS service PARENT_SCOPE)
+INSTALL_LIB(service True service)
